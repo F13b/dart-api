@@ -11,18 +11,16 @@ class AppUserControllers extends ResourceController {
   final ManagedContext managedContext;
 
   @Operation.get()
-  Future<Response> getProfile(
-    @Bind.header(HttpHeaders.authorizationHeader) String header,
-  ) async {
+  Future<Response> getProfile(@Bind.header(HttpHeaders.authorizationHeader) String header) async {
     try {
-      final id = AppUtils.getIdFromToken(header);
+      final id = AppUtils.getIdFromHeader(header);
       final user = await managedContext.fetchObjectWithID<User>(id);
       user!.removePropertiesFromBackingMap(['refreshToken', 'accessToken']);
 
       return AppResponse.ok(
-          message: 'Succful taken user profile', body: user.backing.contents);
+          message: 'Данные о пользователе получены', body: user.backing.contents);
     } catch (e) {
-      return AppResponse.serverError(e, message: 'Error to taken user profile');
+      return AppResponse.serverError(e, message: 'Не удалось получить данные пользователя');
     }
   }
 
@@ -32,7 +30,7 @@ class AppUserControllers extends ResourceController {
     @Bind.body() User user,
   ) async {
     try {
-      final id = AppUtils.getIdFromToken(header);
+      final id = AppUtils.getIdFromHeader(header);
       final fUser = await managedContext.fetchObjectWithID<User>(id);
       final qUpdateUser = Query<User>(managedContext)
         ..where((element) => element.id).equalTo(id)
@@ -43,11 +41,11 @@ class AppUserControllers extends ResourceController {
       findUser!.removePropertiesFromBackingMap(['refreshToken', 'accessToken']);
 
       return AppResponse.ok(
-        message: 'Succful update',
+        message: 'Данные успешно обновлены',
         body: findUser.backing.contents,
       );
     } catch (e) {
-      return AppResponse.serverError(e, message: 'Error update');
+      return AppResponse.serverError(e, message: 'Ошибка при обновлении данных');
     }
   }
 
@@ -58,7 +56,7 @@ class AppUserControllers extends ResourceController {
     @Bind.query('oldPassword') String oldPassword,
   ) async {
     try {
-      final id = AppUtils.getIdFromToken(header);
+      final id = AppUtils.getIdFromHeader(header);
       final qFindUser = Query<User>(managedContext)
         ..where((element) => element.id).equalTo(id)
         ..returningProperties(
@@ -75,7 +73,7 @@ class AppUserControllers extends ResourceController {
 
       //Проверка старого пароля с паролем бдшки
       if (oldHashPassword != fUser.hashPassword) {
-        return AppResponse.badrequest(message: 'Not true last password');
+        return AppResponse.badrequest(message: 'Неверный старый пароль');
       }
 
       //Новый хеш пароля
@@ -89,9 +87,9 @@ class AppUserControllers extends ResourceController {
 
       await qUpdateUser.fetchOne();
 
-      return AppResponse.ok(body: 'Succ password change');
+      return AppResponse.ok(body: 'Пароль успешно обновлен');
     } catch (e) {
-      return AppResponse.serverError(e, message: 'Error updating password');
+      return AppResponse.serverError(e, message: 'Ошибка при обновлении пароля');
     }
   }
 }
