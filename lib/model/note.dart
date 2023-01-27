@@ -1,5 +1,5 @@
 import 'package:conduit/conduit.dart';
-import 'category.dart';
+import 'user.dart';
 
 class Note extends ManagedObject<_Note> implements _Note {}
 
@@ -10,8 +10,12 @@ class _Note {
   String? title;
   @Column(nullable: true)
   String? text;
-  @Relate(#category, isRequired: true, onDelete: DeleteRule.cascade)
-  Category? category;
+  @Column(nullable: true)
+  String? category;
+  @Relate(#noteList, isRequired: true, onDelete: DeleteRule.cascade)
+  User? author;
+  @Column(defaultValue: "now()", indexed: true)
   DateTime? createdAt;
+  @Column(nullable: true)
   DateTime? updatedAt;
 }

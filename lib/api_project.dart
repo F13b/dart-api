@@ -1,10 +1,11 @@
 import 'dart:io';
 import 'package:api_project/controllers/api_auth_controller.dart';
+import 'package:api_project/controllers/app_note_controller.dart';
 import 'package:api_project/controllers/app_token_controllers.dart';
 import 'package:api_project/controllers/app_user_controllers.dart';
 import 'package:conduit/conduit.dart';
 import 'model/note.dart';
-import 'model/category.dart';
+import 'model/user.dart';
 
 class AppService extends ApplicationChannel {
   late final ManagedContext managedContext;
@@ -21,6 +22,9 @@ class AppService extends ApplicationChannel {
 
   @override
   Controller get entryPoint => Router()
+    ..route('notes/[:page]')
+      .link(AppTokenController.new)!
+      .link(() => AppNoteController(managedContext))
     ..route('token/[:refresh]').link(() => AppAuthController(managedContext),)
     ..route('user')
       .link(AppTokenController.new)!
